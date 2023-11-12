@@ -52,6 +52,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "learning.urls"
 
+LOGIN_REDIRECT_URL = 'stock:account'
+LOGIN_URL = 'login'
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -61,6 +64,7 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                'django.template.context_processors.media',
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -117,8 +121,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+MEDIA_ROOT = BASE_DIR / 'mediafiles/'
+MEDIA_URL = '/media/'
