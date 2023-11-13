@@ -94,3 +94,48 @@ def account(request):
     }
 
     return render(request, template_name='account.html', context=context)
+
+
+@login_required
+def stock_sell(request, pk):
+    if request.method != "POST":
+        return redirect('stock:detail', pk=pk)
+
+    stock = get_object_or_404(Stock, pk=pk)
+    form = BuySellForm(request.POST)
+
+    if form.is_valid():
+        amount = form.cleaned_data['amount']
+        price = form.cleaned_data['price']
+        sell_cost = price * amount
+
+        acc_stock = get_object_or_404(AccountStock, account=request.user.account, stock=stock)
+        current_cost = acc_stock.average_buy_cost * acc_stock.amount
+
+        if acc_stock.amount < amount:
+            form.add_error(None, 'Недостаточное количество акций для продажи.')
+        else:
+            total_cost = current_cost - sell_cost
+            total_amount = acc_stock.amount - amount
+
+            if total_amount == 0:
+                # Если после продажи количество акций стало равным 0, удаляем запись акции из базы данных
+                acc_stock.delete()
+            else:
+                acc_stock.amount = total_amount
+                acc_stock.average_buy_cost = total_cost / total_amount
+                acc_stock.save()
+
+            acc_currency, created = AccountCurrency.objects.get_or_create(account=request.user.account, currency=stock.currency,
+                                                                          defaults={'amount': 0})
+            acc_currency.amount = acc_currency.amount + sell_cost
+            acc_currency.save()
+
+            return redirect('stock:list')
+
+    context = {
+        'stock': get_object_or_404(Stock, pk=pk),
+        'form': form
+    }
+
+    return render(request, 'stock.html', context)
