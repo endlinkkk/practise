@@ -116,6 +116,8 @@ def stock_sell(request, pk):
             form.add_error(None, 'Недостаточное количество акций для продажи.')
         else:
             total_cost = current_cost - sell_cost
+            if total_cost < 0:
+                total_cost = 0
             total_amount = acc_stock.amount - amount
 
             if total_amount == 0:
